@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { Box, Typography, TextField, Button, Divider } from '@mui/material';
 import { authService } from '../firebase';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+} from 'firebase/auth';
 
 function Auth() {
   const [newAccount, setNewAccount] = useState(true);
@@ -11,6 +16,7 @@ function Auth() {
   });
 
   const auth = authService;
+  const provider = new GoogleAuthProvider();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -52,6 +58,30 @@ function Auth() {
     }
   };
 
+  const onGoogleSignIn = () => {
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        // This gives you a Google Access Token. You can use it to access the Google API.
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const token = credential.accessToken;
+        // The signed-in user info.
+        const user = result.user;
+        // IdP data available using getAdditionalUserInfo(result)
+        // ...
+      })
+      .catch((error) => {
+        // Handle Errors here.
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        // The email of the user's account used.
+        const email = error.customData.email;
+        // The AuthCredential type that was used.
+        const credential = GoogleAuthProvider.credentialFromError(error);
+        console.log(errorCode, errorMessage, email, credential);
+        // ...
+      });
+  };
+
   return (
     <>
       <Typography variant="h2" component="h2">
@@ -78,6 +108,12 @@ function Auth() {
         <Button type="submit" variant="contained" sx={{ mt: 2 }}>
           {newAccount ? '회원가입' : '로그인'}
         </Button>
+        <Divider sx={{ my: 3 }} />
+
+        <Button type="button" variant="contained" onClick={onGoogleSignIn}>
+          {newAccount ? '구글로 회원가입' : '구글로 로그인'}
+        </Button>
+
         <Divider sx={{ my: 3 }} />
         <Button
           type="button"
