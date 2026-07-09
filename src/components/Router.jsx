@@ -1,12 +1,23 @@
 import Home from '../routes/Home';
 import Auth from '../routes/Auth';
-import { useState } from 'react';
+import Nav from './Nav';
+import Profile from '../routes/Profile';
 import { Routes, Route } from 'react-router';
 
 function Router({ isLoggedIn }) {
   return (
     <>
-      <Routes>{isLoggedIn ? <Route path="/" element={<Home />} /> : <Route path="/" element={<Auth />} />}</Routes>
+      {isLoggedIn && <Nav />}
+      <Routes>
+        {isLoggedIn ? (
+          <>
+            <Route path="/" element={<Home />} />
+            <Route path="/profile" element={<Profile />} />
+          </>
+        ) : (
+          <Route path="/" element={<Auth />} />
+        )}
+      </Routes>
     </>
   );
 }
