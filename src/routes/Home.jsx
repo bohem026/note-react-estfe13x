@@ -21,8 +21,10 @@ import {
   limit,
   onSnapshot,
 } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db, storageService } from '../firebase';
+import { ref } from 'firebase/storage';
 import { useEffect, useState, useRef } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import Comment from '../components/Comment';
 
 function Home({ userId }) {
@@ -30,6 +32,9 @@ function Home({ userId }) {
   const [comments, setComments] = useState([]);
   const [attachment, setAttachment] = useState(null);
   const fileInputRef = useRef(null);
+
+  const storage = storageService; // storage 초기화
+  const storageRef = ref(storage); // 참조 초기화
 
   /*
   useEffect로 데이터를 조회 결과를 변수명 comments할당
@@ -53,8 +58,11 @@ function Home({ userId }) {
   const handleChange = (e) => {
     setComment(e.target.value);
   };
+
   const onSubmit = async (e) => {
     e.preventDefault();
+    const storageRef = ref(storage, `${userId}/${uuidv4()}`);
+
     try {
       const docRef = await addDoc(collection(db, 'comments'), {
         // comment: comment,
@@ -68,6 +76,7 @@ function Home({ userId }) {
       console.error('글 추가시 에러가 발생했습니다.', e);
     }
   };
+
   const onFileChange = (e) => {
     const file = e.target.files[0];
 
@@ -77,6 +86,7 @@ function Home({ userId }) {
     };
     reader.readAsDataURL(file);
   };
+
   const onClearFile = () => {
     setAttachment(null);
     if (fileInputRef.current) {
