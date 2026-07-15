@@ -61,26 +61,31 @@ function Home({ userId }) {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    const storageRef = ref(storage, `${userId}/${uuidv4()}`);
 
-    uploadString(storageRef, attachment, 'data_url').then(async (snapshot) => {
-      const imageURL = await getDownloadURL(storageRef);
+    try {
+      let imageURL = null;
 
-      try {
-        const docRef = await addDoc(collection(db, 'comments'), {
-          // comment: comment,
-          comment,
-          date: serverTimestamp(),
-          uid: userId,
-          image: imageURL,
-        });
-        setComment('');
-        // getComments();
-        onClearFile();
-      } catch (e) {
-        console.error('글 추가시 에러가 발생했습니다.', e);
+      if (attachment) {
+        // 첨부 파일이 있으면
+        const storageRef = ref(storage, `${userId}/${uuidv4()}`);
+        const snapshot = await uploadString(storageRef, attachment, 'data_url');
+        imageURL = await getDownloadURL(storageRef); // 이미지 절대 경로 할당
       }
-    });
+
+      const data = {
+        comment,
+        date: serverTimestamp(),
+        uid: userId,
+        image: imageURL,
+      };
+
+      const docRef = await addDoc(collection(db, 'comments'), data); // firestore에 글 저장
+      setComment('');
+      // getComments();
+      onClearFile();
+    } catch (e) {
+      console.error('글 추가 시 에러가 발생했습니다.', e);
+    }
   };
 
   const onFileChange = (e) => {
